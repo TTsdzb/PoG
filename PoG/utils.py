@@ -24,15 +24,15 @@ def retrieve_top_docs(query, docs, model, width=3):
     top_scores = [pair[1] for pair in doc_score_pairs[:width]]
     return top_docs, top_scores
 
-def run_llm(prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-3.5-turbo", print_in=True, print_out=True):
+def run_llm(prompt, temperature, max_tokens, opeani_api_keys, engine="deepseek-chat", print_in=True, print_out=True):
     if print_in:
         print(color_green+prompt+color_end)
 
-    if 'gpt' in engine:
+    if 'deepseek' in engine:
         messages = [{"role":"system","content":"You are an AI assistant that helps people find information."}]
         message_prompt = {"role":"user","content":prompt}
         messages.append(message_prompt)
-        client = openai.OpenAI(api_key=opeani_api_keys)
+        client = openai.OpenAI(api_key=opeani_api_keys, base_url="https://api.deepseek.com")
         completion = client.chat.completions.create(
                 model=engine,
                 messages = messages,
