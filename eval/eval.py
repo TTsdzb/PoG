@@ -86,9 +86,10 @@ if __name__ == '__main__':
                 count_q[ori_data[type_field]] = 0
             count_q[ori_data[type_field]] += 1
         start_i = data['results'].find('{')
+        end_i = data['results'].rfind('}') + 1
         if start_i != -1:
             try:
-                results = json.loads(data['results'][start_i:])
+                results = json.loads(data['results'][start_i:end_i])
                 if 'A' in results.keys():
                     response = results['A']['Answer']
                 else:
