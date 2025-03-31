@@ -1,4 +1,3 @@
-
 subobjective_prompt = """Please break down the process of answering the question into as few subobjectives as possible based on semantic analysis.
 Here is an example: 
 Q: Which of the countries in the Caribbean has the smallest country calling code?
@@ -6,7 +5,6 @@ Output: ['Search the countries in the Caribbean', 'Search the country calling co
 
 Now you need to directly output subobjectives of the following question in list format without other information or notes. 
 Q: """
-
 
 
 extract_relation_prompt = """Please provide as few highly relevant relations as possible to the question and its subobjectives from the following relations (separated by semicolons).
