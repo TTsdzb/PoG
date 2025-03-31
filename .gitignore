@@ -1,0 +1,11 @@
+# IDE and environment
+/.idea/
+/.venv/
+__pycache__/
+
+# Data outputs
+*.jsonl
+
+# Temporal mem directory
+/mem/
+
