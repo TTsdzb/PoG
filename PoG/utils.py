@@ -269,11 +269,11 @@ def if_finish_list(
     prompt = (
         judge_reverse
         + question
-        + "\nEntities set to be retrieved: "
+        + "\n要检索的实体集："
         + str(list(set(sorted([entid_name[ent_i] for ent_i in new_lst]))))
-        + "\nMemory: "
+        + "\n记忆："
         + his_mem
-        + "\nKnowledge Triplets:"
+        + "\n知识三元组："
         + chain_prompt
     )
 
@@ -304,11 +304,11 @@ def if_finish_list(
         prompt = (
             add_ent_prompt
             + question
-            + "\nReason: "
+            + "\n理由："
             + reason
-            + "\nCandidate Entities: "
+            + "\n候选实体："
             + str(sorted(other_entities_name))
-            + "\nMemory: "
+            + "\n记忆："
             + his_mem
         )
 

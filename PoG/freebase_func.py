@@ -96,11 +96,11 @@ def construct_relation_prune_prompt(
     return (
         extract_relation_prompt
         + question
-        + "\nSubobjectives: "
+        + "\n子目标："
         + str(sub_questions)
-        + "\nTopic Entity: "
+        + "\n话题实体："
         + entity_name
-        + "\nRelations: "
+        + "\n关系："
         + "; ".join(total_relations)
     )
 
@@ -259,7 +259,7 @@ def generate_answer(question, subquestions, cluster_chain_of_entities, args):
             for chain in sublist
         ]
     )
-    prompt += "\nKnowledge Triplets: " + chain_prompt
+    prompt += "\n知识三元组：" + chain_prompt
     result, token_num = run_llm(
         prompt,
         args.temperature_reasoning,
@@ -332,7 +332,7 @@ def entity_condition_prune(
                         e_list = [name_entid[e_n] for e_n in topn_entities]
                         print("sentence:", topn_entities)
 
-                    prompt = prune_entity_prompt + question + "\nTriples: "
+                    prompt = prune_entity_prompt + question + "\n三元组："
                     sorted_e_list = [entid_name[e_id] for e_id in sorted(e_list)]
                     prompt += (
                         entid_name[topic_e] + " " + rela + " " + str(sorted_e_list)
@@ -471,9 +471,9 @@ def update_memory(
     prompt = (
         update_mem_prompt
         + question
-        + "\nSubobjectives: "
+        + "\n子目标："
         + str(subquestions)
-        + "\nMemory: "
+        + "\n记忆："
         + his_mem
     )
 
@@ -486,7 +486,7 @@ def update_memory(
                     entid_name[topic_e] + " " + rela + " " + str(sorted_e_list) + "\n"
                 )
 
-    prompt += "\nKnowledge Triplets:\n" + chain_prompt
+    prompt += "\n知识三元组：\n" + chain_prompt
 
     response, token_num = run_llm(
         prompt,
@@ -517,7 +517,7 @@ def reasoning(
     with open(q_mem_f_path + "/mem", "r", encoding="utf-8") as f:
         his_mem = f.read()
 
-    prompt = answer_depth_prompt + question + "\nMemory: " + his_mem
+    prompt = answer_depth_prompt + question + "\n记忆：" + his_mem
 
     chain_prompt = ""
 
@@ -529,7 +529,7 @@ def reasoning(
                     entid_name[topic_e] + ", " + rela + ", " + str(sorted_e_list) + "\n"
                 )
 
-    prompt += "\nKnowledge Triplets:\n" + chain_prompt
+    prompt += "\n知识三元组：\n" + chain_prompt
 
     response, token_num = run_llm(
         prompt,
