@@ -208,13 +208,11 @@ def extract_add_and_reason(string):
 
 
 def init_sparql(
-    llm_messages, question: str, subquestions: list[str], topic_entity_str: str, args
+    llm_messages, question: str, topic_entity_str: str, args
 ):
     prompt = (
         init_sparql_prompt
         + question
-        + "\n子目标"
-        + str(subquestions)
         + "\n起始节点："
         + topic_entity_str
     )
@@ -235,7 +233,6 @@ def iter_sparql(
     llm_messages,
     sparql_result,
     question: str,
-    subquestions: list[str],
     topic_entity_str: str,
     args,
 ):
@@ -244,8 +241,6 @@ def iter_sparql(
         + str(sparql_result)
         + next_query_prompt_tail
         + question
-        + "\n子目标："
-        + str(subquestions)
         + "\n起始节点："
         + topic_entity_str
     )

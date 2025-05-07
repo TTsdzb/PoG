@@ -120,44 +120,7 @@ if __name__ == "__main__":
             with open(q_mem_f_path + "/mem", "w", encoding="utf-8") as f:
                 pass
 
-            call_num += 1
-            sub_questions, token_num = get_subquestions(q_mem_f_path, question, args)
-            for kk in token_num.keys():
-                all_t[kk] += token_num[kk]
-
             topic_entity = data["topic_entity"]
-            cluster_chain_of_entities = []
-            depth_ent_rel_ent_dict = {}
-            reverse_rec = {"time": 0, "ent": []}
-
-            entid_name = {}
-            name_entid = {}
-            for e_id, e_name in topic_entity.items():
-                entid_name[e_id] = e_name
-                name_entid[e_name] = e_id
-
-            if len(topic_entity) == 0:
-                call_num += 1
-                results, token_num = generate_without_explored_paths(
-                    question, sub_questions, args
-                )
-                for kk in token_num.keys():
-                    all_t[kk] += token_num[kk]
-
-                new_e_rev_list = [entid_name[x] for x in reverse_rec["ent"]]
-                reverse_rec["ent"] = new_e_rev_list
-                save_2_jsonl(
-                    question,
-                    question_string,
-                    results,
-                    [],
-                    call_num,
-                    all_t,
-                    start_time,
-                    file_name=args.dataset + "_" + args.LLM_type,
-                )
-                continue
-
             ans = False
             try:
                 query_hist = []
@@ -174,7 +137,7 @@ if __name__ == "__main__":
                 print(f"Topic entities: {topic_entity_str}")
                 call_num += 1
                 results, token_num = init_sparql(
-                    llm_messages, question, sub_questions, topic_entity_str, args
+                    llm_messages, question, topic_entity_str, args
                 )
                 for kk in token_num.keys():
                     all_t[kk] += token_num[kk]
@@ -190,7 +153,6 @@ if __name__ == "__main__":
                         llm_messages,
                         sparql_result,
                         question,
-                        sub_questions,
                         topic_entity_str,
                         args,
                     )
@@ -200,8 +162,8 @@ if __name__ == "__main__":
                     if "A" in result_obj:  # 回答了问题
                         # LLM 直接找到了答案
                         if (
-                            result_obj["A"]["Sufficient"] == "Yes"
-                            and result_obj["A"]["Answer"] != ""
+                                result_obj["A"]["Sufficient"] == "Yes"
+                                and result_obj["A"]["Answer"] != ""
                         ):
                             ans = True
                             save_2_jsonl(
@@ -233,6 +195,43 @@ if __name__ == "__main__":
                 print("Use PoG directly")
 
             if ans:  # 找到答案了可以直接跳
+                continue
+
+            call_num += 1
+            sub_questions, token_num = get_subquestions(q_mem_f_path, question, args)
+            for kk in token_num.keys():
+                all_t[kk] += token_num[kk]
+
+            cluster_chain_of_entities = []
+            depth_ent_rel_ent_dict = {}
+            reverse_rec = {"time": 0, "ent": []}
+
+            entid_name = {}
+            name_entid = {}
+            for e_id, e_name in topic_entity.items():
+                entid_name[e_id] = e_name
+                name_entid[e_name] = e_id
+
+            if len(topic_entity) == 0:
+                call_num += 1
+                results, token_num = generate_without_explored_paths(
+                    question, sub_questions, args
+                )
+                for kk in token_num.keys():
+                    all_t[kk] += token_num[kk]
+
+                new_e_rev_list = [entid_name[x] for x in reverse_rec["ent"]]
+                reverse_rec["ent"] = new_e_rev_list
+                save_2_jsonl(
+                    question,
+                    question_string,
+                    results,
+                    [],
+                    call_num,
+                    all_t,
+                    start_time,
+                    file_name=args.dataset + "_" + args.LLM_type,
+                )
                 continue
 
             pre_relations = []
