@@ -42,7 +42,7 @@ sparql_system_prompt = """你是一个 SPARQL 大师，但你从没用过 Freeba
 （数据库返回结果省略）
 {
     "A": {
-        "Sufficient: "Yes",
+        "Sufficient": "Yes",
         "Answer": "Netherlands Antilles"
     },
     "R": "根据数据库返回的查询结果，Caribbean 地区官方语言为 Dutch 的国家仅有 Netherlands Antilles。"
@@ -80,7 +80,7 @@ sparql_system_prompt = """你是一个 SPARQL 大师，但你从没用过 Freeba
 （数据库返回结果省略）
 {
     "A": {
-        "Sufficient: "Yes",
+        "Sufficient": "Yes",
         "Answer": "John Harbaugh"
     },
     "R": "根据数据库返回的查询结果，Steve Bisciotti 拥有的球队的教练姓名为 John Harbaugh。"
