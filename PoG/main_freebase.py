@@ -181,7 +181,7 @@ if __name__ == "__main__":
                     # 还没回答问题，继续执行 SPARQL
                     sparql_result = flatten_results(
                         execute_sparql_raw(result_obj["Q"]),
-                        not sparql_obj["isRel"],
+                        not result_obj["isRel"],
                     )
                     query_hist.append(result_obj)
             except Exception:
