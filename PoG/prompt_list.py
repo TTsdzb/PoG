@@ -7,7 +7,7 @@ subobjective_prompt = """请根据语义分析，将回答问题的过程分解�
 问题："""
 
 sparql_system_prompt = """你是一个 SPARQL 大师，但你从没用过 Freebase 数据库。给定一个问题、相关子目标和起始节点（用英文逗号“,”分隔），要求你使用 SPARQL 语句在 Freebase 数据库中逐步查询给定问题的答案。在每一步推理中，你需要改进你的 SPARQL 语句继续进行下一步查询，或对问题进行回答。
-如果你认为当前信息足以回答问题，你需要以 JSON 格式（必须包括 "A" 和 "R"，"A" 包括 "Sufficient" 与 "Answer"，为相关答案；"R" 为作此回答的理由）向上级程序输出问题的答案。注意答案必须按原样输出，如果无法回答，"Answer" 应为空字符串。
+如果你认为当前信息足以回答问题，你需要以 JSON 格式（必须包括 "A" 和 "R"，"A" 包括 "Sufficient" 与 "Answer"，为相关答案；"R" 为作此回答的理由）向上级程序输出问题的答案。注意答案必须按原样输出，如果无法回答，请继续改善查询语句。
 如果你仍要改进你的 SPARQL 语句，你需要以 JSON 格式（必须包括 "R"、"Q" 和 "isRel"，"R" 为查询的原因、查询语句的解释及下一步行动，"Q" 为对应的 SPARQL 语句，"isRel" 表示查询目标是否为关系）向上级程序输出改进方案。
 
 以下是两个例子：
@@ -35,7 +35,13 @@ sparql_system_prompt = """你是一个 SPARQL 大师，但你从没用过 Freeba
 （数据库返回结果省略）
 {
     "R": "现在我们已经找到了表示官方语言的关系 `ns:location.country.official_language`。对应查询语句查询哪些 Caribbean 国家将 Dutch Language 作为官方语言。",
-    "Q": "PREFIX ns: <http://rdf.freebase.com/ns/>\\nSELECT DISTINCT ?name\\nWHERE {\\nns:m.0261m ns:location.location.contains ?country .\\n?country ns:location.country.official_language ns:m.02bv9 .\\n}",
+    "Q": "PREFIX ns: <http://rdf.freebase.com/ns/>\\nSELECT DISTINCT ?country\\nWHERE {\\nns:m.0261m ns:location.location.contains ?country .\\nns:m.02bv9 ns:location.country.official_language ?country .\\n}",
+    "isRel": false
+}
+（数据库未返回任何结果）
+{
+    "R": "数据库没有返回任何可用的结果。在重新检查查询语句后，我认为我对关系 `ns:location.country.official_language` 的理解可能有误，它可能代表“某国家的官方语言是某语言”而非“某语言是某国家的官方语言”，我应重新组织查询语句。对应查询语句查询哪些 Caribbean 国家将 Dutch Language 作为官方语言。",
+    "Q": "PREFIX ns: <http://rdf.freebase.com/ns/>\\nSELECT DISTINCT ?country\\nWHERE {\\nns:m.0261m ns:location.location.contains ?country .\\n?country ns:location.country.official_language ns:m.02bv9 .\\n}",
     "isRel": false
 }
 （数据库返回结果省略）
@@ -77,7 +83,7 @@ sparql_system_prompt = """你是一个 SPARQL 大师，但你从没用过 Freeba
 （数据库返回结果省略）
 {
     "R": "从返回结果中，我发现了 `ns:american_football.football_team.current_head_coach` 和 `ns:sports.sports_team.coaches` 这两个可能包含教练信息的关系，需要依次尝试。对应查询语句使用更具体的 `ns:american_football.football_team.current_head_coach` 关系来查询当前主教练。如果查询失败，下一步是使用 `ns:sports.sports_team.coaches` 关系做更宽泛的查询。",
-    "Q": "PREFIX ns: <http://rdf.freebase.com/ns/>\\nSELECT DISTINCT ?name\\nWHERE {\\nns:m.06x8mf ns:sports.sports_team_owner.teams_owned ?team .\\n?team ns:american_football.football_team.current_head_coach ?coach .\\n}",
+    "Q": "PREFIX ns: <http://rdf.freebase.com/ns/>\\nSELECT DISTINCT ?coach\\nWHERE {\\nns:m.06x8mf ns:sports.sports_team_owner.teams_owned ?team .\\n?team ns:american_football.football_team.current_head_coach ?coach .\\n}",
     "isRel": false
 }
 （数据库返回结果省略）
@@ -94,6 +100,8 @@ sparql_system_prompt = """你是一个 SPARQL 大师，但你从没用过 Freeba
     },
     "R": "根据数据库返回的查询结果，Steve Bisciotti 拥有的球队的教练姓名为 John Harbaugh。"
 }
+
+不论何时，查询应始终分为多步进行，且只应使用在之前查询中出现过的关系。根据已有关系推测未知关系名应被视为不可接受的。
 """
 
 init_sparql_prompt = """现在，你需要以 JSON 格式（必须包括 "R" 和 "Q"，"R" 为查询的原因、查询语句的解释及下一步行动，"Q" 为对应的 SPARQL 语句）直接输出以下问题的结果，不要包含其他信息或注释。查询过程中你的查询语句必须包含起始节点。
@@ -105,7 +113,7 @@ next_query_prompt_head = """数据库返回了如下结果：
 next_query_prompt_tail = """
 现在请你改进你的 SPARQL 语句继续进行下一步查询，或对问题进行回答。
 
-如果你认为当前信息足以回答问题，你需要以 JSON 格式（必须包括 "A" 和 "R"，"A" 包括 "Sufficient" 与 "Answer"，为相关答案；"R" 为作此回答的理由）向上级程序输出问题的答案。注意答案必须按原样输出，如果无法回答，"Answer" 应为空字符串。
+如果你认为当前信息足以回答问题，你需要以 JSON 格式（必须包括 "A" 和 "R"，"A" 包括 "Sufficient" 与 "Answer"，为相关答案；"R" 为作此回答的理由）向上级程序输出问题的答案。注意答案必须按原样输出，如果无法回答，请继续改善查询语句。
 如果你仍要改进你的 SPARQL 语句，你需要以 JSON 格式（必须包括 "R"、"Q" 和 "isRel"，"R" 为查询的原因、查询语句的解释及下一步行动，"Q" 为对应的 SPARQL 语句，"isRel" 表示查询目标是否为关系）向上级程序输出改进方案。
 
 现在请你给出 JSON 格式的回复，不包含任何其他信息或注释。注意改进过程中你的查询语句必须包含起始节点。
