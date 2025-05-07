@@ -45,12 +45,20 @@ def execurte_sparql(sparql_query):
 
 
 def flatten_results(results):
-    flattened_results = {}
+    flattened_results = ""
     for var in results["head"]["vars"]:
-        flattened_results[var] = [
-            binding[var]["value"].replace("http://rdf.freebase.com/ns/", "ns:")
-            for binding in results["results"]["bindings"]
-        ]
+        flattened_results += f"{var}\t"
+    flattened_results = flattened_results[:-1] + "\n"
+    for i, binding in enumerate(results["results"]["bindings"]):
+        if i >= 70:
+            flattened_results += (
+                f"...剩余 {len(results['results']['bindings']) - i} 个结果\n"
+            )
+            break
+        row = ""
+        for var in results["head"]["vars"]:
+            row += f"{json.dumps(binding[var]['value'].replace('http://rdf.freebase.com/ns/', 'ns:'), ensure_ascii=False)}\t"
+        flattened_results += row[:-1] + "\n"
     return flattened_results
 
 
