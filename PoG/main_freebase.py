@@ -5,6 +5,7 @@ import pprint
 import traceback
 from time import sleep
 
+from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
 from freebase_func import *
