@@ -1,14 +1,10 @@
-from SPARQLWrapper import SPARQLWrapper, JSON
-from utils import *
 import random
+
+from SPARQLWrapper import JSON, SPARQLWrapper
+
 from freebase_func import *
 from prompt_list import *
-import json
-import time
-import openai
-import re
-from sentence_transformers import util
-from sentence_transformers import SentenceTransformer
+from utils import *
 
 SPARQLPATH = "http://localhost:8890/sparql"  # your own IP and port
 
@@ -35,13 +31,27 @@ def abandon_rels(relation):
         return True
 
 
-def execurte_sparql(sparql_query):
+def execute_sparql_raw(sparql_query):
     sparql = SPARQLWrapper(SPARQLPATH)
     sparql.setQuery(sparql_query)
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
     # print(results["results"]["bindings"])
-    return results["results"]["bindings"]
+    return results
+
+
+def execurte_sparql(sparql_query):
+    return execute_sparql_raw(sparql_query)["results"]["bindings"]
+
+
+def flatten_results(results):
+    flattened_results = {}
+    for var in results["head"]["vars"]:
+        flattened_results[var] = [
+            binding[var]["value"].replace("http://rdf.freebase.com/ns/", "ns:")
+            for binding in results["results"]["bindings"]
+        ]
+    return flattened_results
 
 
 def replace_relation_prefix(relations):

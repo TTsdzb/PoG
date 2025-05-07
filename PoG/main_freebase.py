@@ -1,9 +1,14 @@
-from tqdm import tqdm
 import argparse
-from utils import *
-from freebase_func import *
+import json
 import os
 import pprint
+import traceback
+from time import sleep
+
+from tqdm import tqdm
+
+from freebase_func import *
+from utils import *
 
 
 def repeat_unanswer(dataset, datas, question_string, model_name):
@@ -41,14 +46,23 @@ if __name__ == "__main__":
     parser.add_argument(
         "--temperature_exploration",
         type=float,
-        default=0.3,
+        default=1.0,
         help="the temperature in exploration stage.",
     )
     parser.add_argument(
         "--temperature_reasoning",
         type=float,
-        default=0.3,
+        default=1.0,
         help="the temperature in reasoning stage.",
+    )
+    parser.add_argument(
+        "--temperature_sparql",
+        type=float,
+        default=1.3,
+        help="the temperature in reasoning stage.",
+    )
+    parser.add_argument(
+        "--sparql_iter", type=int, default=10, help="tries for direct SPARQL query."
     )
     parser.add_argument(
         "--depth", type=int, default=4, help="choose the search depth of PoG."
@@ -76,7 +90,7 @@ if __name__ == "__main__":
     #     datas = get_one_data(datas, question_string, 'Which countries both contain the Delnita River and fall in Eastern Europe?')
     #     print(datas)
     model = SentenceTransformer(
-        "../../../models/sentence-transformers/msmarco-distilbert-base-tas-b"
+        "../../models/sentence-transformers/msmarco-distilbert-base-tas-b"
     )
     part_q = False
     if part_q:
@@ -141,6 +155,78 @@ if __name__ == "__main__":
                     start_time,
                     file_name=args.dataset + "_" + args.LLM_type,
                 )
+                continue
+
+            ans = False
+            try:
+                query_hist = []
+                llm_messages = [
+                    {
+                        "role": "system",
+                        "content": sparql_system_prompt,
+                    }
+                ]
+                # 第一次查
+                topic_entity_str = ",".join(
+                    [f'"{k}": "{topic_entity[k]}"' for k in topic_entity.keys()]
+                )
+                print(f"Topic entities: {topic_entity_str}")
+                call_num += 1
+                results, token_num = init_sparql(
+                    llm_messages, question, sub_questions, topic_entity_str, args
+                )
+                for kk in token_num.keys():
+                    all_t[kk] += token_num[kk]
+                sparql_obj = load_json_obj(results)
+                sparql_result = flatten_results(execute_sparql_raw(sparql_obj["Q"]))
+                query_hist.append(sparql_obj)
+
+                for it in range(args.sparql_iter):
+                    call_num += 1
+                    results, token_num = iter_sparql(
+                        llm_messages,
+                        sparql_result,
+                        question,
+                        sub_questions,
+                        topic_entity_str,
+                        args,
+                    )
+                    for kk in token_num.keys():
+                        all_t[kk] += token_num[kk]
+                    result_obj = load_json_obj(results)
+                    if "A" in result_obj:  # 回答了问题
+                        # LLM 直接找到了答案
+                        if (
+                            result_obj["A"]["Sufficient"] == "Yes"
+                            and result_obj["A"]["Answer"] != ""
+                        ):
+                            ans = True
+                            save_2_jsonl(
+                                question,
+                                question_string,
+                                results,
+                                query_hist,
+                                call_num,
+                                all_t,
+                                start_time,
+                                file_name=args.dataset + "_" + args.LLM_type,
+                            )
+                        # 其他情况为 LLM 摆了，直接进 PoG
+                        break
+                    # 还没回答问题，继续执行 SPARQL
+                    sparql_result = flatten_results(execute_sparql_raw(result_obj["Q"]))
+                    query_hist.append(result_obj)
+            except Exception:
+                tb = traceback.format_exc()
+                with open("err.txt", mode="a", encoding="utf-8") as f:
+                    f.write("Error on direct SPARQL:\n")
+                    f.write(tb)
+                    f.write(f"Question: {question}\n\n")
+                print("Error on direct SPARQL:")
+                print(tb)
+                print("Use PoG directly")
+
+            if ans:  # 找到答案了可以直接跳
                 continue
 
             pre_relations = []
@@ -460,5 +546,9 @@ if __name__ == "__main__":
                     start_time,
                     file_name=args.dataset + "_" + args.LLM_type,
                 )
-        except:
+
+        except Exception:
+            traceback.print_exc()
+            print("Will continue after 5s")
+            sleep(5)
             continue

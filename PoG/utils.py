@@ -1,14 +1,12 @@
-from prompt_list import *
 import json
-import time
-import openai
-import re
-import requests
 import random
-from prompt_list import *
+import re
+import time
+
+import openai
 from sentence_transformers import util
-from sentence_transformers import SentenceTransformer
-import os
+
+from prompt_list import *
 
 color_yellow = "\033[93m"
 color_green = "\033[92m"
@@ -26,7 +24,8 @@ def retrieve_top_docs(query, docs, model, width=3):
     return top_docs, top_scores
 
 
-def run_llm(
+def run_llm_chained(
+    messages,
     prompt,
     temperature,
     max_tokens,
@@ -39,12 +38,6 @@ def run_llm(
         print(color_green + prompt + color_end)
 
     if "deepseek" in engine:
-        messages = [
-            {
-                "role": "system",
-                "content": "You are an AI assistant that helps people find information.",
-            }
-        ]
         message_prompt = {"role": "user", "content": prompt}
         messages.append(message_prompt)
         client = openai.OpenAI(
@@ -59,6 +52,7 @@ def run_llm(
             presence_penalty=0,
         )
 
+        messages.append(completion.choices[0].message)
         result = completion.choices[0].message.content
 
         token_num = {
@@ -70,6 +64,34 @@ def run_llm(
         if print_out:
             print(color_yellow + result + color_end)
         return result, token_num
+
+
+def run_llm(
+    prompt,
+    temperature,
+    max_tokens,
+    opeani_api_keys,
+    engine="deepseek-chat",
+    print_in=True,
+    print_out=True,
+):
+    llm_messages = [
+        {
+            "role": "system",
+            "content": "You are an AI assistant that helps people find information.",
+        }
+    ]
+    response, token_num = run_llm_chained(
+        llm_messages,
+        prompt,
+        temperature,
+        max_tokens,
+        opeani_api_keys,
+        engine,
+        print_in,
+        print_out,
+    )
+    return response, token_num
 
 
 def convert_dict_name(ent_rel_ent_dict, entid_name):
@@ -114,9 +136,20 @@ def save_2_jsonl(
         "output_token": all_t["output"],
         "time": tt,
     }
-    with open("PoG_{}.jsonl".format(file_name), "a") as outfile:
-        json_str = json.dumps(dict)
+    with open("PoG_{}.jsonl".format(file_name), "a", encoding="utf-8") as outfile:
+        json_str = json.dumps(dict, ensure_ascii=False)
         outfile.write(json_str + "\n")
+
+
+def extract_json(string):
+    first_brace_p = string.find("{")
+    last_brace_p = string.rfind("}")
+    return string[first_brace_p : last_brace_p + 1]
+
+
+def load_json_obj(string):
+    string = extract_json(string)
+    return json.loads(string)
 
 
 def extract_add_ent(string):
@@ -172,6 +205,61 @@ def extract_add_and_reason(string):
         return True, reason
     else:
         return False, reason
+
+
+def init_sparql(
+    llm_messages, question: str, subquestions: list[str], topic_entity_str: str, args
+):
+    prompt = (
+        init_sparql_prompt
+        + question
+        + "\n子目标"
+        + str(subquestions)
+        + "\n起始节点："
+        + topic_entity_str
+    )
+
+    response, token_num = run_llm_chained(
+        llm_messages,
+        prompt,
+        args.temperature_sparql,
+        args.max_length,
+        args.opeani_api_keys,
+        args.LLM_type,
+        True,
+    )
+    return response, token_num
+
+
+def iter_sparql(
+    llm_messages,
+    sparql_result,
+    question: str,
+    subquestions: list[str],
+    topic_entity_str: str,
+    args,
+):
+    prompt = (
+        next_query_prompt_head
+        + str(sparql_result)
+        + next_query_prompt_tail
+        + question
+        + "\n子目标："
+        + str(subquestions)
+        + "\n起始节点："
+        + topic_entity_str
+    )
+
+    response, token_num = run_llm_chained(
+        llm_messages,
+        prompt,
+        args.temperature_sparql,
+        args.max_length,
+        args.opeani_api_keys,
+        args.LLM_type,
+        True,
+    )
+    return response, token_num
 
 
 def generate_without_explored_paths(question, subquestions, args):
