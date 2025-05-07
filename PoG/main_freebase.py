@@ -179,7 +179,9 @@ if __name__ == "__main__":
                 for kk in token_num.keys():
                     all_t[kk] += token_num[kk]
                 sparql_obj = load_json_obj(results)
-                sparql_result = flatten_results(execute_sparql_raw(sparql_obj["Q"]))
+                sparql_result = flatten_results(
+                    execute_sparql_raw(sparql_obj["Q"]), not sparql_obj["isRel"]
+                )
                 query_hist.append(sparql_obj)
 
                 for it in range(args.sparql_iter):
@@ -215,7 +217,10 @@ if __name__ == "__main__":
                         # 其他情况为 LLM 摆了，直接进 PoG
                         break
                     # 还没回答问题，继续执行 SPARQL
-                    sparql_result = flatten_results(execute_sparql_raw(result_obj["Q"]))
+                    sparql_result = flatten_results(
+                        execute_sparql_raw(result_obj["Q"]),
+                        not sparql_obj["isRel"],
+                    )
                     query_hist.append(result_obj)
             except Exception:
                 tb = traceback.format_exc()

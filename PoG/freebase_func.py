@@ -44,13 +44,13 @@ def execurte_sparql(sparql_query):
     return execute_sparql_raw(sparql_query)["results"]["bindings"]
 
 
-def flatten_results(results):
+def flatten_results(results, limit):
     flattened_results = ""
     for var in results["head"]["vars"]:
         flattened_results += f"{var}\t"
     flattened_results = flattened_results[:-1] + "\n"
     for i, binding in enumerate(results["results"]["bindings"]):
-        if i >= 70:
+        if limit and i >= 30:
             flattened_results += (
                 f"...剩余 {len(results['results']['bindings']) - i} 个结果\n"
             )
