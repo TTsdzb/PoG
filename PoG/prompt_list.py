@@ -31,7 +31,12 @@ sparql_system_prompt = """你是一个 SPARQL 大师，但你从没用过 Freeba
 }
 （数据库返回结果省略）
 {
-    "R": "现在我们已经找到了表示官方语言的关系 `ns:location.country.official_language`。对应查询语句查询哪些 Caribbean 国家将 Dutch Language 作为官方语言，同时通过关系 `ns:type.object.name` 获取其名称。",
+    "R": "现在我们已经找到了表示官方语言的关系 `ns:location.country.official_language`。对应查询语句查询哪些 Caribbean 国家将 Dutch Language 作为官方语言。",
+    "Q": "PREFIX ns: <http://rdf.freebase.com/ns/>\\nSELECT DISTINCT ?name\\nWHERE {\\nns:m.0261m ns:location.location.contains ?country .\\n?country ns:location.country.official_language ns:m.02bv9 .\\n}"
+}
+（数据库返回结果省略）
+{
+    "R": "数据库返回了将 Dutch Language 作为官方语言的国家，但我需要知道这些国家的名称。对应查询语句通过关系 `ns:type.object.name` 获取其名称。",
     "Q": "PREFIX ns: <http://rdf.freebase.com/ns/>\\nSELECT DISTINCT ?name\\nWHERE {\\nns:m.0261m ns:location.location.contains ?country .\\n?country ns:location.country.official_language ns:m.02bv9 .\\n?country ns:type.object.name ?name .\\n}"
 }
 （数据库返回结果省略）
@@ -64,7 +69,12 @@ sparql_system_prompt = """你是一个 SPARQL 大师，但你从没用过 Freeba
 }
 （数据库返回结果省略）
 {
-    "R": "从返回结果中，我发现了 `ns:american_football.football_team.current_head_coach` 和 `ns:sports.sports_team.coaches` 这两个可能包含教练信息的关系。对应查询语句使用更具体的 `ns:american_football.football_team.current_head_coach` 关系来查询当前主教练，同时通过关系 `ns:type.object.name` 获取其名称。如果查询失败，下一步是使用 `ns:sports.sports_team.coaches` 关系做更宽泛的查询。",
+    "R": "从返回结果中，我发现了 `ns:american_football.football_team.current_head_coach` 和 `ns:sports.sports_team.coaches` 这两个可能包含教练信息的关系。对应查询语句使用更具体的 `ns:american_football.football_team.current_head_coach` 关系来查询当前主教练。如果查询失败，下一步是使用 `ns:sports.sports_team.coaches` 关系做更宽泛的查询。",
+    "Q": "PREFIX ns: <http://rdf.freebase.com/ns/>\\nSELECT DISTINCT ?name\\nWHERE {\\nns:m.06x8mf ns:sports.sports_team_owner.teams_owned ?team .\\n?team ns:american_football.football_team.current_head_coach ?coach .\\n}"
+}
+（数据库返回结果省略）
+{
+    "R": "数据库返回了教练的实体节点 ID，但我需要获取其姓名。对应查询语句使用关系 `ns:type.object.name` 获取其名称。如果查询失败，下一步是使用 `ns:sports.sports_team.coaches` 关系做更宽泛的查询。",
     "Q": "PREFIX ns: <http://rdf.freebase.com/ns/>\\nSELECT DISTINCT ?name\\nWHERE {\\nns:m.06x8mf ns:sports.sports_team_owner.teams_owned ?team .\\n?team ns:american_football.football_team.current_head_coach ?coach .\\n?coach ns:type.object.name ?name .\\n}"
 }
 （数据库返回结果省略）
