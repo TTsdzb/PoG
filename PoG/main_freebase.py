@@ -121,6 +121,28 @@ if __name__ == "__main__":
                 pass
 
             topic_entity = data["topic_entity"]
+            if len(topic_entity) == 0:
+                call_num += 1
+                results, token_num = generate_without_explored_paths(
+                    question, sub_questions, args
+                )
+                for kk in token_num.keys():
+                    all_t[kk] += token_num[kk]
+
+                new_e_rev_list = [entid_name[x] for x in reverse_rec["ent"]]
+                reverse_rec["ent"] = new_e_rev_list
+                save_2_jsonl(
+                    question,
+                    question_string,
+                    results,
+                    [],
+                    call_num,
+                    all_t,
+                    start_time,
+                    file_name=args.dataset + "_" + args.LLM_type,
+                )
+                continue
+
             ans = False
             try:
                 query_hist = []
@@ -211,28 +233,6 @@ if __name__ == "__main__":
             for e_id, e_name in topic_entity.items():
                 entid_name[e_id] = e_name
                 name_entid[e_name] = e_id
-
-            if len(topic_entity) == 0:
-                call_num += 1
-                results, token_num = generate_without_explored_paths(
-                    question, sub_questions, args
-                )
-                for kk in token_num.keys():
-                    all_t[kk] += token_num[kk]
-
-                new_e_rev_list = [entid_name[x] for x in reverse_rec["ent"]]
-                reverse_rec["ent"] = new_e_rev_list
-                save_2_jsonl(
-                    question,
-                    question_string,
-                    results,
-                    [],
-                    call_num,
-                    all_t,
-                    start_time,
-                    file_name=args.dataset + "_" + args.LLM_type,
-                )
-                continue
 
             pre_relations = []
             pre_heads = [-1] * len(topic_entity)
