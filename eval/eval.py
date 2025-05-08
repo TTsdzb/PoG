@@ -28,6 +28,7 @@ if __name__ == "__main__":
     re_list = []
     error_list = []
 
+    num_sparql = 0
     num_right = 0
     num_error = 0
     error_question = []
@@ -93,6 +94,9 @@ if __name__ == "__main__":
             alias_dict,
             add_ans_alias_dict,
         )
+
+        if len(data["reasoning_chains"]) > 0 and "Q" in data["reasoning_chains"][0]:
+            num_sparql += 1
 
         if "time" in data.keys():
             call_num_list.append(data["call_num"])
@@ -180,8 +184,9 @@ if __name__ == "__main__":
                 num_error += 1
 
     print("All: ", len(output_datas))
+    print("SPARQL direct: {}".format(float(num_sparql) / len(output_datas)))
     print("Exact Match: {}".format(float(num_right / len(output_datas))))
-    print("right: {}, error: {}".format(num_right, num_error))
+    print("sparql: {}, right: {}, error: {}".format(num_sparql, num_right, num_error))
     print(sorted(count_q.items(), key=lambda x: x[0]))
     print(sorted(right_q.items(), key=lambda x: x[0]))
     for k, v in count_q.items():
