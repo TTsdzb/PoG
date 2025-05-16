@@ -5,6 +5,7 @@ import pprint
 import traceback
 from time import sleep
 
+from SPARQLWrapper.SPARQLExceptions import QueryBadFormed
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
@@ -175,42 +176,47 @@ if __name__ == "__main__":
                 query_hist.append(sparql_obj)
 
                 for it in range(args.sparql_iter):
-                    call_num += 1
-                    results, token_num = iter_sparql(
-                        llm_messages,
-                        sparql_result,
-                        question,
-                        topic_entity_str,
-                        args,
-                    )
-                    for kk in token_num.keys():
-                        all_t[kk] += token_num[kk]
-                    result_obj = load_json_obj(results)
-                    if "A" in result_obj:  # 回答了问题
-                        # LLM 直接找到了答案
-                        if (
-                                result_obj["A"]["Sufficient"] == "Yes"
-                                and result_obj["A"]["Answer"] != ""
-                        ):
-                            ans = True
-                            save_2_jsonl(
-                                question,
-                                question_string,
-                                results,
-                                query_hist,
-                                call_num,
-                                all_t,
-                                start_time,
-                                file_name=args.dataset + "_" + args.LLM_type,
-                            )
-                        # 其他情况为 LLM 摆了，直接进 PoG
-                        break
-                    # 还没回答问题，继续执行 SPARQL
-                    sparql_result = flatten_results(
-                        execute_sparql_raw(result_obj["Q"]),
-                        not result_obj["isRel"],
-                    )
-                    query_hist.append(result_obj)
+                    try:
+                        call_num += 1
+                        results, token_num = iter_sparql(
+                            llm_messages,
+                            sparql_result,
+                            question,
+                            topic_entity_str,
+                            args,
+                        )
+                        for kk in token_num.keys():
+                            all_t[kk] += token_num[kk]
+                        result_obj = load_json_obj(results)
+                        if "A" in result_obj:  # 回答了问题
+                            # LLM 直接找到了答案
+                            if (
+                                    result_obj["A"]["Sufficient"] == "Yes"
+                                    and result_obj["A"]["Answer"] != ""
+                            ):
+                                ans = True
+                                save_2_jsonl(
+                                    question,
+                                    question_string,
+                                    results,
+                                    query_hist,
+                                    call_num,
+                                    all_t,
+                                    start_time,
+                                    file_name=args.dataset + "_" + args.LLM_type,
+                                )
+                            # 其他情况为 LLM 摆了，直接结束
+                            break
+                        # 还没回答问题，继续执行 SPARQL
+                        sparql_result = flatten_results(
+                            execute_sparql_raw(result_obj["Q"]),
+                            not result_obj["isRel"],
+                        )
+                        query_hist.append(result_obj)
+                    # LLM 写的代码有问题，花费一次迭代重试一次
+                    except (QueryBadFormed, json.JSONDecodeError):
+                        llm_messages.pop()
+                        llm_messages.pop()
             except Exception:
                 tb = traceback.format_exc()
                 with open("err.txt", mode="a", encoding="utf-8") as f:
