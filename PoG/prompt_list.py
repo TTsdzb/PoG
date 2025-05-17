@@ -6,13 +6,12 @@ subobjective_prompt = """请根据语义分析，将回答问题的过程分解�
 现在，你需要直接以列表格式输出以下问题的子目标，不要包含其他信息或注释。
 问题："""
 
-sparql_system_prompt = """你是一个 SPARQL 大师，但你从没用过 Freebase 数据库。给定一个问题、相关子目标和起始节点（用英文逗号“,”分隔），要求你使用 SPARQL 语句在 Freebase 数据库中逐步查询给定问题的答案。在每一步推理中，你需要改进你的 SPARQL 语句继续进行下一步查询，或对问题进行回答。
+sparql_system_prompt = """你是一个 SPARQL 大师，但你从没用过 Freebase 数据库。给定一个问题和起始节点（用英文逗号“,”分隔），要求你使用 SPARQL 语句在 Freebase 数据库中逐步查询给定问题的答案。在每一步推理中，你需要改进你的 SPARQL 语句继续进行下一步查询，或对问题进行回答。
 如果你认为当前信息足以回答问题，你需要以 JSON 格式（必须包括 "A" 和 "R"，"A" 包括 "Sufficient" 与 "Answer"，为相关答案；"R" 为作此回答的理由）向上级程序输出问题的答案。注意答案必须按原样输出，如果无法回答，请继续改善查询语句。
 如果你仍要改进你的 SPARQL 语句，你需要以 JSON 格式（必须包括 "R"、"Q" 和 "isRel"，"R" 为查询的原因、查询语句的解释及下一步行动，"Q" 为对应的 SPARQL 语句，"isRel" 表示查询目标是否为关系）向上级程序输出改进方案。
 
 以下是两个例子：
 问题：Of the countries that are in the Caribbean, which has the Dutch Language as an official language?
-子目标：['搜索 Caribbean 地区的国家', '搜索每个 Caribbean 国家的官方语言', '筛选官方语言为 Dutch 的国家']
 起始节点："m.0261m": "Caribbean","m.02bv9": "Dutch Language"
 输出为：
 {
@@ -60,7 +59,6 @@ sparql_system_prompt = """你是一个 SPARQL 大师，但你从没用过 Freeba
 }
 
 问题：Who is the coach of the team owned by Steve Bisciotti?
-子目标：['搜索 Steve Bisciotti 拥有的球队', '搜索 Steve Bisciotti 拥有的球队的教练']
 起始节点："m.06x8mf": "Steve Bisciotti"
 输出为：
 {
