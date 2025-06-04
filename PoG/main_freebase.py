@@ -123,6 +123,11 @@ if __name__ == "__main__":
             topic_entity = data["topic_entity"]
             if len(topic_entity) == 0:
                 call_num += 1
+                sub_questions, token_num = get_subquestions(q_mem_f_path, question, args)
+                for kk in token_num.keys():
+                    all_t[kk] += token_num[kk]
+
+                call_num += 1
                 results, token_num = generate_without_explored_paths(
                     question, sub_questions, args
                 )
