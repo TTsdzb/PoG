@@ -2,6 +2,7 @@ import argparse
 import re
 
 import numpy as np
+
 from utils import *
 
 if __name__ == "__main__":
@@ -42,16 +43,14 @@ if __name__ == "__main__":
 
     if args.dataset == "cwq":
         type_field = "compositionality_type"
-        with open(
-            "../../pog/cope_alias/cwq_aname_dict.json", "r", encoding="utf-8"
-        ) as f:
+        with open("../cope_alias/cwq_aname_dict.json", "r", encoding="utf-8") as f:
             aname_dict = json.load(f)
         with open(
-            "../../pog/cope_alias/CWQ_aliase_data31158.json", "r", encoding="utf-8"
+            "../cope_alias/CWQ_aliase_data31158.json", "r", encoding="utf-8"
         ) as f:
             alias_dict = json.load(f)
         with open(
-            "../../pog/cope_alias/ComplexWebQuestions_test_wans.json",
+            "../cope_alias/ComplexWebQuestions_test_wans.json",
             "r",
             encoding="utf-8",
         ) as f:
@@ -69,9 +68,7 @@ if __name__ == "__main__":
                 add_ans_alias_dict[q_item["question"]] = ans_list
 
     elif args.dataset == "webqsp":
-        with open(
-            "../../pog/cope_alias/WQSP_aliase_data.json", "r", encoding="utf-8"
-        ) as f:
+        with open("../cope_alias/WQSP_aliase_data.json", "r", encoding="utf-8") as f:
             alias_dict = json.load(f)
     elif args.dataset == "grailqa":
         type_field = "level"
