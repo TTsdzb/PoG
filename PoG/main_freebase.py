@@ -214,7 +214,7 @@ if __name__ == "__main__":
                         )
                         query_hist.append(result_obj)
                     # LLM 写的代码有问题，花费一次迭代重试一次
-                    except (QueryBadFormed, json.JSONDecodeError):
+                    except (KeyError, QueryBadFormed, json.JSONDecodeError, json.decoder.JSONDecodeError):
                         llm_messages.pop()
                         llm_messages.pop()
             except Exception:
