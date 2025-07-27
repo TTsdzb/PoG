@@ -152,7 +152,7 @@ def extract_reason_and_anwer(string):
         answer = re.search(r'"Answer":\s*(\[[^\]]+\])', string).group(1)
 
     reason = re.search(r'"R":\s*"(.*?)"', string).group(1)
-    sufficient = re.search(r'"Sufficient":\s*"(.*?)"', string).group(1)
+    sufficient = re.search(r'"(Sufficient|Known)":\s*"(.*?)"', string).group(2)
     print("Answer:", answer)
     print("Reason:", reason)
     print("Sufficient:", sufficient)
