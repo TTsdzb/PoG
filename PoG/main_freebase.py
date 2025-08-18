@@ -349,20 +349,6 @@ if __name__ == "__main__":
                 pprint.pprint(convert_dict_name(ent_rel_ent_dict, entid_name))
 
                 if len(total_candidates) == 0:
-                    new_e_rev_list = [entid_name[x] for x in reverse_rec["ent"]]
-                    reverse_rec["ent"] = new_e_rev_list
-                    half_stop(
-                        question,
-                        question_string,
-                        sub_questions,
-                        cluster_chain_of_entities,
-                        depth,
-                        call_num,
-                        all_t,
-                        start_time,
-                        args,
-                    )
-                    flag_printed = True
                     break
 
                 (
@@ -502,20 +488,6 @@ if __name__ == "__main__":
                                 entities_id += add_ent_list
 
                         if not entities_id or depth > 5:
-                            new_e_rev_list = [entid_name[x] for x in reverse_rec["ent"]]
-                            reverse_rec["ent"] = new_e_rev_list
-                            half_stop(
-                                question,
-                                question_string,
-                                sub_questions,
-                                cluster_chain_of_entities,
-                                depth,
-                                call_num,
-                                all_t,
-                                start_time,
-                                args,
-                            )
-                            flag_printed = True
                             break
                         else:
                             topic_entity = {}
@@ -526,20 +498,6 @@ if __name__ == "__main__":
                                     topic_entity[entity] = entid_name[entity]
 
                 else:
-                    new_e_rev_list = [entid_name[x] for x in reverse_rec["ent"]]
-                    reverse_rec["ent"] = new_e_rev_list
-                    half_stop(
-                        question,
-                        question_string,
-                        sub_questions,
-                        cluster_chain_of_entities,
-                        depth,
-                        call_num,
-                        all_t,
-                        start_time,
-                        args,
-                    )
-                    flag_printed = True
                     break
 
             if not flag_printed:
