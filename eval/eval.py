@@ -1,4 +1,5 @@
 import argparse
+import json
 import re
 
 import numpy as np
@@ -84,7 +85,7 @@ if __name__ == "__main__":
         if part_q and data[question_string] not in q_set:
             continue
 
-        print(data[question_string])
+        # print(data[question_string])
         answers, ori_data = align(
             args.dataset,
             question_string,
@@ -182,6 +183,9 @@ if __name__ == "__main__":
                 num_right += 1
             else:
                 num_error += 1
+
+    with open("err.json", "w", encoding="utf-8") as f:
+        json.dump(error_question, f, indent=2, ensure_ascii=False)
 
     print("All: ", len(output_datas))
     print("SPARQL direct: {}".format(float(num_sparql) / len(output_datas)))

@@ -24,7 +24,7 @@ def find_unique_strings(file1, file2):
 
 # 示例用法
 if __name__ == "__main__":
-    file1 = "err_qog_1.json"  # 替换为实际文件路径
+    file1 = "err_qog_3.json"  # 替换为实际文件路径
     file2 = "err_pog.json"  # 替换为实际文件路径
 
     try:
