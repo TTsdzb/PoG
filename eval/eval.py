@@ -30,6 +30,7 @@ if __name__ == "__main__":
     error_list = []
 
     num_sparql = 0
+    sparql_iter_sum = 0
     num_right = 0
     num_error = 0
     error_question = []
@@ -98,6 +99,7 @@ if __name__ == "__main__":
 
         if len(data["reasoning_chains"]) > 0 and "Q" in data["reasoning_chains"][0]:
             num_sparql += 1
+            sparql_iter_sum += len(data["reasoning_chains"])
 
         if "time" in data.keys():
             call_num_list.append(data["call_num"])
@@ -189,6 +191,7 @@ if __name__ == "__main__":
 
     print("All: ", len(output_datas))
     print("SPARQL direct: {}".format(float(num_sparql) / len(output_datas)))
+    print("SPARQL iter: {}".format(float(sparql_iter_sum) / float(num_sparql)))
     print("Exact Match: {}".format(float(num_right / len(output_datas))))
     print("sparql: {}, right: {}, error: {}".format(num_sparql, num_right, num_error))
     print(sorted(count_q.items(), key=lambda x: x[0]))
