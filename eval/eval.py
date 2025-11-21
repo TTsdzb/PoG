@@ -130,7 +130,11 @@ if __name__ == "__main__":
                         right_q[ori_data[type_field]] += 1
                 else:
                     num_error += 1
-                    error_question.append(data[question_string])
+                    error_question.append({
+                        "question": data[question_string],
+                        "answers": answers,
+                        "QoG": str(response),
+                    })
             except:
                 pattern = r'"Answer":\s*["\']([^"\']+)["\']'
                 match_ = list(re.finditer(pattern, data["results"][start_i:]))
@@ -144,7 +148,11 @@ if __name__ == "__main__":
                             right_q[ori_data[type_field]] += 1
                     else:
                         num_error += 1
-                        error_question.append(data[question_string])
+                        error_question.append({
+                            "question": data[question_string],
+                            "answers": answers,
+                            "QoG": str(response),
+                        })
                 else:
                     pattern = r'"Answer":\s*(\[[^\]]+\])'
                     match_ = re.search(pattern, data["results"][start_i:])
@@ -163,7 +171,11 @@ if __name__ == "__main__":
                                 break
                         if not flag:
                             num_error += 1
-                            error_question.append(data[question_string])
+                            error_question.append({
+                                "question": data[question_string],
+                                "answers": answers,
+                                "QoG": str(response),
+                            })
 
                     else:
                         if exact_match(str(response), answers):
@@ -174,7 +186,11 @@ if __name__ == "__main__":
                             num_right += 1
                         else:
                             num_error += 1
-                            error_question.append(data[question_string])
+                            error_question.append({
+                                "question": data[question_string],
+                                "answers": answers,
+                                "QoG": str(response),
+                            })
         else:
             response = data["results"]
             if exact_match(response, answers):
